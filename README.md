@@ -24,38 +24,85 @@ composer require solution-forest/filament-translate-field
 
 ## Configuration:
 
-- Define the `translatable` fields in your model using the translatable package of your choice, such as "spatie/laravel-translatabl" or "dimsav/laravel-translatable".
+- Define the `translatable` fields in your model using the translatable package of your choice, such as "spatie/laravel-translatable" or "dimsav/laravel-translatable".
 - Configure the translatable fields in the model's *$translatable* property, specifying the translatable attributes.
 
-## Adding the plugin to a panel
-To add a plugin to a panel, you must include it in the configuration file using the plugin() method:
-```php
-use SolutionForest\FilamentTranslateField\FilamentTranslateFieldPlugin;
+## Setup
+<details>
+ <summary><b>For version before 1.x.x</b></summary>
+  <h3> Adding the plugin to a panel</h3>
+  
+ <p>To add a plugin to a panel, you must include it in the configuration file using the plugin() method:</p>
  
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        // ...
-        ->plugin(FilamentTranslateFieldPlugin::make());
-}
-```
-
-## Setting the default translatable locales
-To set up the locales that can be used to translate content, you can pass an array of locales to the `defaultLocales()` plugin method:
-
-```php
-use SolutionForest\FilamentTranslateField\FilamentTranslateFieldPlugin;
+  ```php
+  use SolutionForest\FilamentTranslateField\FilamentTranslateFieldPlugin;
+   
+  public function panel(Panel $panel): Panel
+  {
+      return $panel
+          // ...
+          ->plugin(FilamentTranslateFieldPlugin::make());
+  }
+  ```
+  
+ <h3> Setting the default translatable locales </h3>
  
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        // ...
-        ->plugin(
-            FilamentTranslateFieldPlugin::make()
-               ->defaultLocales(['en', 'es', 'fr']),
-        );
-}
+  <p>To set up the locales that can be used to translate content, you can pass an array of locales to the `defaultLocales()` plugin method:</p>
+  
+  ```php
+  use SolutionForest\FilamentTranslateField\FilamentTranslateFieldPlugin;
+   
+  public function panel(Panel $panel): Panel
+  {
+      return $panel
+          // ...
+          ->plugin(
+              FilamentTranslateFieldPlugin::make()
+                 ->defaultLocales(['en', 'es', 'fr']),
+          );
+  }
+  ```
+</details>
+
+<details open>
+ <summary><b>For version equal or after 1.x.x</b></summary>
+ 
+ <h3> Setting the default translatable locales </h3>
+
+ <p>Since the plugin after 1.x.x is a standalone plugin, which does not need to be related to Filament Panel, so you need to globally set it up in the config file or use the boot method in `AppServiceProvider`.</p>
+  <p>To set up the locales that can be used to translate content, you can pass an array of locales to the `defaultLocales()` plugin method:</p>
+  
+  ```php
+  use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
+   
+  class AppServiceProvider extends ServiceProvider
+ {
+     /**
+      * Register any application services.
+      */
+     public function register(): void
+     {
+         //
+     }
+ 
+     /**
+      * Bootstrap any application services.
+      */
+     public function boot(): void
+     {
+         FilamentTranslateField::defaultLocales(['en', 'es', 'fr']);
+     }
+ }
+  ```
+
+Or, you can publish configuration file `config/filament-translate-field.php` and add default locales on `locales`:
+```php
+
+return [
+    'locales' => ['en', 'es', 'fr'],
+];
 ```
+</details>
 
 ## Usage
 
@@ -221,6 +268,44 @@ Translate::make()
     ->contained(false)
 ```
 
+### Exclude 
+The `exclude` feature allows you to specify fields that you don't want to be included in the translation process. This can be useful for fields that contain dynamic content or that shouldn't be translated into other languages.
+
+```php
+use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
+ 
+Translate::make([
+        Forms\Components\TextInput::make('title'),
+        Forms\Components\TextInput::make('description'),
+    ])
+    ->exclude(['description'])
+```
+Without exclude
+```json
+{
+    "title": {
+        "en": "Dump",
+        "es": "Dump",
+        "fr": "Dump"
+    },
+    "description": {
+        "en": null,
+        "es": null,
+        "fr": null
+    }
+}
+```
+With Exclude
+```json
+{
+    "title": {
+        "en": "Dump",
+        "es": "Dump",
+        "fr": "Dump"
+    },
+    "description": null
+}
+```
 ## Publishing Views
 
 To publish the views, use:
@@ -228,6 +313,13 @@ To publish the views, use:
 ```bash
 php artisan vendor:publish --provider="SolutionForest\\FilamentTranslateField\\FilamentTranslateFieldServiceProvider" --tag="filament-translate-field-views"
 ```
+## Publishing Configuration file
+
+To publish the configuration file, use:
+
+```bash
+php artisan vendor:publish --provider="SolutionForest\\FilamentTranslateField\\FilamentTranslateFieldServiceProvider" --tag="filament-translate-field-config"
+``
 
 ## Example
 
